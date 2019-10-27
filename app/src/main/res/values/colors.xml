@@ -7,6 +7,8 @@
 
     <color name="dividerColor">#1e000000</color>
 
+    <color name="dateExpired">#f0134d</color>
+
     <color name="avatarColor1">#B7DED4</color>
     <color name="avatarColor2">#2F6476</color>
     <color name="avatarColor3">#81978D</color>
