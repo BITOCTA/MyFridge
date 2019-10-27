@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="colorPrimary">#A5E5EF</color>
+    <color name="colorPrimaryDark">#74b3bd</color>
+    <color name="colorPrimaryLight">#d8ffff</color>
+    <color name="colorAccent">#37A0B2</color>
+
+    <color name="dividerColor">#1e000000</color>
+
+    <color name="avatarColor1">#B7DED4</color>
+    <color name="avatarColor2">#2F6476</color>
+    <color name="avatarColor3">#81978D</color>
+    <color name="avatarColor4">#BFA982</color>
+    <color name="avatarColor5">#CEC06B</color>
+
+    <color name="titleColor">#de000000</color>
+    <color name="secondaryTextColor">#99000000</color>
+
+<array name="avatarColor">
+    <item>@color/avatarColor1</item>
+    <item>@color/avatarColor2</item>
+    <item>@color/avatarColor3</item>
+    <item>@color/avatarColor4</item>
+    <item>@color/avatarColor5</item>
+
+</array>
+
+</resources>
