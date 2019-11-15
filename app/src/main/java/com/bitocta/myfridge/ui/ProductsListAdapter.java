@@ -64,8 +64,6 @@ public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapte
 
         if (productExpireDate != null) {
             expireDate.setText(simpleDateFormat.format(product.getExpireDate()));
-            if(new Date().after(productExpireDate))
-                expireDate.setTextColor(Color.RED);
 
         } else {
             expireDate.setText(R.string.no_expire_date);
