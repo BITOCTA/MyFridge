@@ -17,17 +17,20 @@ import com.bitocta.myfridge.db.entity.Product;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static android.text.format.DateFormat.getDateFormat;
 
 public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapter.ViewHolder> {
 
     private View.OnClickListener mOnItemClickListener;
     private View.OnLongClickListener mOnLongItemClickListener;
     private ArrayList<Product> productsList = new ArrayList<>();
+
 
     @NonNull
     @Override
@@ -51,7 +54,8 @@ public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapte
         String productItemsLeft = product.getItemsLeft();
         String productImagePath = product.getImagePath();
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
+        DateFormat dateFormat = getDateFormat(ProductsListFragment.context);
 
 
         title.setText(productTitle);
@@ -63,7 +67,7 @@ public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapte
 
 
         if (productExpireDate != null) {
-            expireDate.setText(simpleDateFormat.format(product.getExpireDate()));
+            expireDate.setText(dateFormat.format(product.getExpireDate()));
 
         } else {
             expireDate.setText(R.string.no_expire_date);

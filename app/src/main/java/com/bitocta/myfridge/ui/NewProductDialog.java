@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.ColorDrawable;
+import android.icu.util.LocaleData;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -42,10 +43,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
 
@@ -53,13 +55,19 @@ import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
+import static android.text.format.DateFormat.getDateFormat;
+
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
+
 
 
 public class NewProductDialog extends DialogFragment implements EasyPermissions.PermissionCallbacks, DatePickerDialog.OnDateSetListener {
 
     public static final String TAG = "new_product_dialog";
+    private static final int PERMISSIONS_REQUEST_CODE = 123;
+    private static final int TAKE_PHOTO_REQUEST_CODE = 1;
+    private static final int CHOOSE_FROM_GALLERY_REQUEST_CODE = 2;
 
     private Toolbar toolbar;
 
@@ -68,7 +76,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
     private EditText editExpireDate;
     private ImageView choosePhoto;
     private String image_path;
-    private SimpleDateFormat simpleDateFormat;
+    private DateFormat dateFormat;
 
 
     @Override
@@ -99,8 +107,6 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
         editExpireDate = view.findViewById(R.id.edit_expire_date);
         editQuantity = view.findViewById(R.id.edit_quantity);
         choosePhoto = view.findViewById(R.id.choose_photo);
-
-
         return view;
     }
 
@@ -108,12 +114,14 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         toolbar.setNavigationOnClickListener(v -> dismiss());
         toolbar.setTitle(R.string.new_product_title);
         toolbar.inflateMenu(R.menu.menu_dialog);
         toolbar.setOnMenuItemClickListener(this::onOptionsItemSelected);
 
-        simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
+        dateFormat = getDateFormat(getContext());
 
 
         choosePhoto.setOnClickListener(view1 -> {
@@ -165,7 +173,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
                 if (!editExpireDate.getText().toString().isEmpty()) {
                     try {
-                        date = simpleDateFormat.parse(editExpireDate.getText().toString());
+                        date = dateFormat.parse(editExpireDate.getText().toString());
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -183,37 +191,37 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
     }
 
 
-    @AfterPermissionGranted(123)
+    @AfterPermissionGranted(PERMISSIONS_REQUEST_CODE)
     private void selectImage() {
 
         String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         if (EasyPermissions.hasPermissions(getContext(), permissions)) {
 
-            final CharSequence[] options = {"Take Photo", "Choose from Gallery"};
+            final CharSequence[] options = {getResources().getString(R.string.take_photo_option), getResources().getString(R.string.gallery_option)};
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setTitle("Choose product picture");
+            builder.setTitle(getResources().getString(R.string.select_image_title));
 
             builder.setItems(options, new DialogInterface.OnClickListener() {
 
                 @Override
                 public void onClick(DialogInterface dialog, int item) {
 
-                    if (options[item].equals("Take Photo")) {
+                    if (options[item].equals(getResources().getString(R.string.take_photo_option))) {
                         Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(takePicture, 1);
+                        startActivityForResult(takePicture, TAKE_PHOTO_REQUEST_CODE);
 
-                    } else if (options[item].equals("Choose from Gallery")) {
+                    } else if (options[item].equals(getResources().getString(R.string.gallery_option))) {
                         Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(pickPhoto, 0);
+                        startActivityForResult(pickPhoto, CHOOSE_FROM_GALLERY_REQUEST_CODE);
 
                     }
                 }
             });
             builder.show();
         } else {
-            EasyPermissions.requestPermissions(this, "Grant this permissions to add photos of your product", 123, permissions);
+            EasyPermissions.requestPermissions(this, getResources().getString(R.string.permission_grant_msg), PERMISSIONS_REQUEST_CODE, permissions);
         }
 
     }
@@ -222,14 +230,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_CANCELED) {
             switch (requestCode) {
-                case 0:
-                    if (resultCode == RESULT_OK && data != null) {
-                        Glide.with(getContext()).load(data.getData()).apply(RequestOptions.circleCropTransform()).into(choosePhoto);
-                        image_path = data.getDataString();
-                    }
-
-                    break;
-                case 1:
+                case TAKE_PHOTO_REQUEST_CODE:
                     if (resultCode == RESULT_OK && data != null) {
 
                         Bitmap photo = (Bitmap) data.getExtras().get("data");
@@ -240,6 +241,14 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
                     }
                     break;
+                case CHOOSE_FROM_GALLERY_REQUEST_CODE:
+                    if (resultCode == RESULT_OK && data != null) {
+                        Glide.with(getContext()).load(data.getData()).apply(RequestOptions.circleCropTransform()).into(choosePhoto);
+                        image_path = data.getDataString();
+                    }
+
+                    break;
+
             }
         }
         if (requestCode == AppSettingsDialog.DEFAULT_SETTINGS_REQ_CODE) {
@@ -270,12 +279,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
     @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
-        String date;
-        if (monthOfYear >= 9)
-            date = dayOfMonth + "." + (monthOfYear + 1) + "." + year;
-        else
-            date = dayOfMonth + ".0" + (monthOfYear + 1) + "." + year;
-
+        String date = dateFormat.format(new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime());
         editExpireDate.setText(date);
     }
 
@@ -287,12 +291,13 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
     }
 
     public String getRealPathFromURI(Uri uri) {
+
         Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
         cursor.moveToFirst();
         int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
         return cursor.getString(idx);
-    }
 
+    }
 
     String createImage(String text) {
 

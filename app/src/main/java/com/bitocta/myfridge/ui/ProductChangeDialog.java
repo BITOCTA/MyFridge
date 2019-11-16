@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,11 +23,15 @@ import com.bitocta.myfridge.db.entity.Product;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
-import java.text.SimpleDateFormat;
+
+import static android.text.format.DateFormat.getDateFormat;
 
 import static android.app.Activity.RESULT_OK;
 
+
 public class ProductChangeDialog extends DialogFragment {
+
+
 
     public final static int REMOVED_PRODUCT = 2;
 
@@ -43,6 +48,7 @@ public class ProductChangeDialog extends DialogFragment {
 
     private ImageView productImage;
     private TextView buttonDelete;
+    private java.text.DateFormat dateFormat;
 
 
     @Override
@@ -93,8 +99,8 @@ public class ProductChangeDialog extends DialogFragment {
 
         product = ProductsListFragment.mProductViewModel.getAllProducts().getValue().get(position);
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
+        dateFormat = getDateFormat(getContext());
 
         toolbar.setNavigationOnClickListener(v -> dismiss());
         toolbar.setTitle(R.string.change_product_title);
@@ -105,7 +111,7 @@ public class ProductChangeDialog extends DialogFragment {
         editQuantity.setText(product.getItemsLeft().replaceAll("\\r\\n|\\r|\\n", " "));
 
         if (product.getExpireDate() != null) {
-            productExpireDate.setText(simpleDateFormat.format(product.getExpireDate()));
+            productExpireDate.setText(dateFormat.format(product.getExpireDate()));
         } else {
             productExpireDate.setText(getResources().getText(R.string.no_expire_date));
         }

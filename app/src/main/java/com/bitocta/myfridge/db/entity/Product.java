@@ -10,8 +10,14 @@ import com.bitocta.myfridge.db.converter.DateConverter;
 import java.io.Serializable;
 import java.util.Date;
 
+import lombok.Data;
+
+
+@Data
 @Entity
+
 public class Product implements Serializable {
+
 
     @PrimaryKey(autoGenerate = true)
     public int pid;
@@ -36,36 +42,4 @@ public class Product implements Serializable {
         this.imagePath = imagePath;
     }
 
-
-    public String getTitle() {
-        return title;
-    }
-
-    public Date getExpireDate() {
-        return expireDate;
-    }
-
-    public String getItemsLeft() {
-        return itemsLeft;
-    }
-
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setItemsLeft(String itemsLeft) {
-        this.itemsLeft = itemsLeft;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setExpireDate(Date expireDate) {
-        this.expireDate = expireDate;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
 }

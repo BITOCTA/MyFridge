@@ -1,4 +1,7 @@
 <resources>
+
+
+
     <string name="app_name">MyFridge</string>
     <string name="action_settings">Settings</string>
 
@@ -17,8 +20,6 @@
     <string name="delete">Delete</string>
     <string name="removed">removed</string>
 
-
-
     <!--Change quantity dialog -->
     <string name="change_product_title">Change data</string>
     <string name="change_quantity">Change quantity</string>
@@ -29,5 +30,12 @@
     <string name="product_expire_date">Expire date</string>
     <string name="product_quantity">Quantity</string>
 
+    <!-- Permission grant -->
+    <string name="permission_grant_msg">Grant this permissions to add photos of your product</string>
+
+    <!-- Select image alert dialog -->
+    <string name="select_image_title">Choose product picture</string>
+    <string name="take_photo_option">Take photo</string>
+    <string name="gallery_option">Choose from gallery</string>
 
 </resources>
