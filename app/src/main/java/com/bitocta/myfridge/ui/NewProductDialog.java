@@ -3,17 +3,10 @@ package com.bitocta.myfridge.ui;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -30,23 +23,17 @@ import androidx.fragment.app.DialogFragment;
 
 import com.bitocta.myfridge.R;
 import com.bitocta.myfridge.db.entity.Product;
+import com.bitocta.myfridge.util.TitlePhotoMaker;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Random;
-
-
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
@@ -56,9 +43,6 @@ import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static android.text.format.DateFormat.getDateFormat;
 import static com.bitocta.myfridge.util.TitlePhotoMaker.getImageUri;
-
-import com.bitocta.myfridge.util.TitlePhotoMaker;
-
 
 
 public class NewProductDialog extends DialogFragment implements EasyPermissions.PermissionCallbacks, DatePickerDialog.OnDateSetListener {
@@ -170,7 +154,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
                 Date date = null;
 
                 if (image_path == null) {
-                    image_path = TitlePhotoMaker.createImage(trimmedTitle,getResources(),getContext());
+                    image_path = TitlePhotoMaker.createImage(trimmedTitle, getResources(), getContext());
                 }
 
                 if (!editExpireDate.getText().toString().isEmpty()) {
@@ -181,7 +165,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
                     }
                 }
 
-                replyIntent.putExtra("product", new Product(trimmedTitle, date, editQuantity.getText().toString(), image_path));
+                replyIntent.putExtra(ProductsListFragment.PRODUCT_TAG, new Product(trimmedTitle, date, editQuantity.getText().toString(), image_path));
 
                 getTargetFragment().onActivityResult(getTargetRequestCode(), RESULT_OK, replyIntent);
 
@@ -234,7 +218,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
                         Glide.with(getContext()).load(photo).apply(RequestOptions.circleCropTransform()).into(choosePhoto);
 
-                        image_path = TitlePhotoMaker.getRealPathFromURI(getImageUri(getContext(), photo),getContext());
+                        image_path = TitlePhotoMaker.getRealPathFromURI(getImageUri(getContext(), photo), getContext());
 
                     }
                     break;

@@ -18,7 +18,6 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProductDao productDao();
 
-
     private static volatile AppDatabase instance;
 
     public static final String DATABASE_NAME = "products-db";

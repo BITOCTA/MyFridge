@@ -17,7 +17,6 @@ import lombok.Data;
 @Entity
 public class Product implements Serializable {
 
-
     @PrimaryKey(autoGenerate = true)
     public int pid;
 

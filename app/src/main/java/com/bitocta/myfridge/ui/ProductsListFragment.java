@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,31 +22,37 @@ import com.bitocta.myfridge.viewmodel.ProductViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.List;
-
-import io.reactivex.disposables.CompositeDisposable;
-
 import static android.app.Activity.RESULT_OK;
 
 public class ProductsListFragment extends Fragment {
 
+    public static final String PRODUCT_TAG = "product";
+    public static final String POSITION_TAG = "position";
     private static final int NEW_PRODUCT_REQUEST_CODE = 1;
     private static final int CHANGE_PRODUCT_REQUEST_CODE = 2;
-
+    public static ProductViewModel mProductViewModel;
+    protected static Context context;
     private RecyclerView recyclerView;
     private ProductsListAdapter productsListAdapter;
-    public static ProductViewModel mProductViewModel;
     private FloatingActionButton fab;
-    protected static Context context;
     private LinearLayoutManager layoutManager;
+    private View.OnClickListener onItemClickListener = view -> {
 
-    private final CompositeDisposable mDisposable = new CompositeDisposable();
+        RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
+        int position = viewHolder.getAdapterPosition();
+
+        Bundle bundle = new Bundle();
+
+        bundle.putInt(POSITION_TAG, position);
+
+        displayProductChangeDialog(getFragmentManager(), bundle);
+
+    };
 
     public static ProductsListFragment getInstance() {
         ProductsListFragment fragment = new ProductsListFragment();
         return fragment;
     }
-
 
     @Nullable
     @Override
@@ -103,19 +108,16 @@ public class ProductsListFragment extends Fragment {
 
     }
 
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
 
         if (resultCode == ProductChangeDialog.REMOVED_PRODUCT) {
-            Product product = (Product) data.getSerializableExtra("product");
+            Product product = (Product) data.getSerializableExtra(PRODUCT_TAG);
             mProductViewModel.delete(product);
 
             Snackbar snackbar = Snackbar
                     .make(getView(), product.getTitle() + " " + getResources().getString(R.string.removed), Snackbar.LENGTH_LONG).setAction(R.string.undo, view -> mProductViewModel.insert(product));
-
-
             snackbar.show();
 
             recyclerView.requestLayout();
@@ -128,7 +130,7 @@ public class ProductsListFragment extends Fragment {
             if (requestCode == NEW_PRODUCT_REQUEST_CODE) {
 
 
-                Product product = (Product) data.getSerializableExtra("product");
+                Product product = (Product) data.getSerializableExtra(PRODUCT_TAG);
                 mProductViewModel.insert(product);
 
                 productsListAdapter.notifyDataSetChanged();
@@ -138,7 +140,7 @@ public class ProductsListFragment extends Fragment {
 
             }
             if (requestCode == CHANGE_PRODUCT_REQUEST_CODE) {
-                Product product = (Product) data.getSerializableExtra("product");
+                Product product = (Product) data.getSerializableExtra(PRODUCT_TAG);
                 mProductViewModel.insert(product);
                 productsListAdapter.notifyDataSetChanged();
 
@@ -148,21 +150,7 @@ public class ProductsListFragment extends Fragment {
             }
         }
 
-
     }
-
-    private View.OnClickListener onItemClickListener = view -> {
-
-        RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
-        int position = viewHolder.getAdapterPosition();
-
-        Bundle bundle = new Bundle();
-
-        bundle.putInt("position", position);
-
-        displayProductChangeDialog(getFragmentManager(), bundle);
-
-    };
 
     private void openDialog() {
         displayNewProductDialog(getFragmentManager());
@@ -176,6 +164,8 @@ public class ProductsListFragment extends Fragment {
         return newProductDialog;
     }
 
+
+
     public ProductChangeDialog displayProductChangeDialog(FragmentManager fragmentManager, Bundle bundle) {
         ProductChangeDialog productChangeDialog = new ProductChangeDialog();
         productChangeDialog.setTargetFragment(ProductsListFragment.this, CHANGE_PRODUCT_REQUEST_CODE);
@@ -183,5 +173,7 @@ public class ProductsListFragment extends Fragment {
         productChangeDialog.show(fragmentManager, productChangeDialog.TAG);
         return productChangeDialog;
     }
+
+
 
 }

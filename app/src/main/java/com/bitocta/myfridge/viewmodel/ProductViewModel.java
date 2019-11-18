@@ -57,6 +57,7 @@ public class ProductViewModel extends AndroidViewModel {
     public void delete(Product product) {
         Completable.fromAction(() -> mRepository.delete(product)).observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io()).subscribe(new CompletableObserver() {
+
             @Override
             public void onSubscribe(Disposable d) {
             }

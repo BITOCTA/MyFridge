@@ -55,7 +55,7 @@ public class ProductChangeDialog extends DialogFragment {
         setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme);
         Bundle bundle = this.getArguments();
         if (bundle != null) {
-            position = bundle.getInt("position", 0);
+            position = bundle.getInt(ProductsListFragment.POSITION_TAG, 0);
         }
 
     }
@@ -118,7 +118,7 @@ public class ProductChangeDialog extends DialogFragment {
 
         buttonDelete.setOnClickListener(view1 -> {
             Intent replyIntent = new Intent();
-            replyIntent.putExtra("product", chosenProduct);
+            replyIntent.putExtra(ProductsListFragment.PRODUCT_TAG, chosenProduct);
             getTargetFragment().onActivityResult(getTargetRequestCode(), REMOVED_PRODUCT, replyIntent);
             dismiss();
         });
@@ -137,7 +137,7 @@ public class ProductChangeDialog extends DialogFragment {
 
                 Intent replyIntent = new Intent();
                 chosenProduct.setItemsLeft(editQuantity.getText().toString());
-                replyIntent.putExtra("product", chosenProduct);
+                replyIntent.putExtra(ProductsListFragment.PRODUCT_TAG, chosenProduct);
                 getTargetFragment().onActivityResult(getTargetRequestCode(), RESULT_OK, replyIntent);
                 dismiss();
             } else {
