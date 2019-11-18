@@ -9,4 +9,4 @@ if needed, **modify quantity** of your products or just **delete** them. Product
 whether your products are eatable or not :)
 
 ## Technologies used
-This application uses **Room Database** as a storage of products list.
+This application uses **Room Database** as a storage of products list. I also used **Lombok** in Room entity class and **rxjava** for database operations.
