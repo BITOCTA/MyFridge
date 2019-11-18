@@ -3,6 +3,19 @@ package com.bitocta.myfridge.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bitocta.myfridge.R;
 import com.bitocta.myfridge.db.entity.Product;
@@ -10,18 +23,9 @@ import com.bitocta.myfridge.viewmodel.ProductViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import io.reactivex.disposables.CompositeDisposable;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -37,6 +41,7 @@ public class ProductsListFragment extends Fragment {
     protected static Context context;
     private LinearLayoutManager layoutManager;
 
+    private final CompositeDisposable mDisposable = new CompositeDisposable();
 
     public static ProductsListFragment getInstance() {
         ProductsListFragment fragment = new ProductsListFragment();
@@ -66,6 +71,7 @@ public class ProductsListFragment extends Fragment {
 
         mProductViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
 
+
         mProductViewModel.getAllProducts().observe(this, products -> productsListAdapter.updateEmployeeListItems(products));
 
         productsListAdapter = new ProductsListAdapter();
@@ -79,13 +85,10 @@ public class ProductsListFragment extends Fragment {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                switch (newState) {
-                    case RecyclerView.SCROLL_STATE_IDLE:
-                        fab.show();
-                        break;
-                    default:
-                        fab.hide();
-                        break;
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    fab.show();
+                } else {
+                    fab.hide();
                 }
                 super.onScrollStateChanged(recyclerView, newState);
             }
@@ -110,12 +113,7 @@ public class ProductsListFragment extends Fragment {
             mProductViewModel.delete(product);
 
             Snackbar snackbar = Snackbar
-                    .make(getView(), product.getTitle() + " "+getResources().getString(R.string.removed), Snackbar.LENGTH_LONG).setAction(R.string.undo, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            mProductViewModel.insert(product);
-                        }
-                    });
+                    .make(getView(), product.getTitle() + " " + getResources().getString(R.string.removed), Snackbar.LENGTH_LONG).setAction(R.string.undo, view -> mProductViewModel.insert(product));
 
 
             snackbar.show();
@@ -129,16 +127,19 @@ public class ProductsListFragment extends Fragment {
         if (resultCode == RESULT_OK) {
             if (requestCode == NEW_PRODUCT_REQUEST_CODE) {
 
+
                 Product product = (Product) data.getSerializableExtra("product");
                 mProductViewModel.insert(product);
+
                 productsListAdapter.notifyDataSetChanged();
                 recyclerView.requestLayout();
                 recyclerView.forceLayout();
 
+
             }
             if (requestCode == CHANGE_PRODUCT_REQUEST_CODE) {
                 Product product = (Product) data.getSerializableExtra("product");
-                mProductViewModel.update(product);
+                mProductViewModel.insert(product);
                 productsListAdapter.notifyDataSetChanged();
 
                 recyclerView.requestLayout();
@@ -156,6 +157,7 @@ public class ProductsListFragment extends Fragment {
         int position = viewHolder.getAdapterPosition();
 
         Bundle bundle = new Bundle();
+
         bundle.putInt("position", position);
 
         displayProductChangeDialog(getFragmentManager(), bundle);

@@ -1,14 +1,12 @@
 package com.bitocta.myfridge.ui;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,7 +16,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.text.DateFormat;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +23,7 @@ import java.util.List;
 import static android.text.format.DateFormat.getDateFormat;
 
 public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapter.ViewHolder> {
+
 
     private View.OnClickListener mOnItemClickListener;
     private View.OnLongClickListener mOnLongItemClickListener;
@@ -79,8 +77,7 @@ public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapte
                     .load(productImagePath)
                     .apply(RequestOptions.circleCropTransform())
                     .into(image);
-        }
-        else{
+        } else {
             Glide.with(ProductsListFragment.context)
                     .load(ProductsListFragment.context.getResources().getDrawable(R.drawable.default_product_pic))
                     .apply(RequestOptions.circleCropTransform())

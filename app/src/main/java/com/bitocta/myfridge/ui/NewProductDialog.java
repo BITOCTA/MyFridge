@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -14,7 +13,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.ColorDrawable;
-import android.icu.util.LocaleData;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -28,15 +26,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-
 import androidx.fragment.app.DialogFragment;
-
 
 import com.bitocta.myfridge.R;
 import com.bitocta.myfridge.db.entity.Product;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.io.ByteArrayOutputStream;
@@ -51,23 +46,32 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
 
+
+
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
-import static android.text.format.DateFormat.getDateFormat;
-
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
+import static android.text.format.DateFormat.getDateFormat;
+import static com.bitocta.myfridge.util.TitlePhotoMaker.getImageUri;
+
+import com.bitocta.myfridge.util.TitlePhotoMaker;
 
 
 
 public class NewProductDialog extends DialogFragment implements EasyPermissions.PermissionCallbacks, DatePickerDialog.OnDateSetListener {
 
     public static final String TAG = "new_product_dialog";
+    private static final String DATE_PICKER_DIALOG_TAG = "Datepickerdialog";
+
+
     private static final int PERMISSIONS_REQUEST_CODE = 123;
     private static final int TAKE_PHOTO_REQUEST_CODE = 1;
     private static final int CHOOSE_FROM_GALLERY_REQUEST_CODE = 2;
+
+    private static final int MINIMAL_TITLE_LENGTH = 2;
 
     private Toolbar toolbar;
 
@@ -124,9 +128,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
         dateFormat = getDateFormat(getContext());
 
 
-        choosePhoto.setOnClickListener(view1 -> {
-            selectImage();
-        });
+        choosePhoto.setOnClickListener(view1 -> selectImage());
 
         editExpireDate.setOnClickListener(mView -> {
 
@@ -141,11 +143,11 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
             dpd.setAccentColor(getResources().getColor(R.color.colorPrimaryDark));
 
-            dpd.show(getFragmentManager(), "Datepickerdialog");
+            dpd.show(getFragmentManager(), DATE_PICKER_DIALOG_TAG);
         });
     }
 
-    @Override
+
     public boolean onOptionsItemSelected(MenuItem item) {
 
         int id = item.getItemId();
@@ -156,7 +158,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
             if (trimmedTitle.isEmpty()) {
                 Toast.makeText(getContext(), R.string.no_title_entered, Toast.LENGTH_LONG).show();
-            } else if (trimmedTitle.length() < 2) {
+            } else if (trimmedTitle.length() < MINIMAL_TITLE_LENGTH) {
                 Toast.makeText(getContext(), R.string.product_title_min_length, Toast.LENGTH_LONG).show();
             } else if (trimmedQuantity.length() == 0 && editQuantity.getText().toString().length() > 0) {
                 Toast.makeText(getContext(), R.string.no_quantity_entered, Toast.LENGTH_LONG).show();
@@ -168,7 +170,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
                 Date date = null;
 
                 if (image_path == null) {
-                    image_path = createImage(trimmedTitle);
+                    image_path = TitlePhotoMaker.createImage(trimmedTitle,getResources(),getContext());
                 }
 
                 if (!editExpireDate.getText().toString().isEmpty()) {
@@ -187,7 +189,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
             }
         }
 
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
 
@@ -203,20 +205,16 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setTitle(getResources().getString(R.string.select_image_title));
 
-            builder.setItems(options, new DialogInterface.OnClickListener() {
+            builder.setItems(options, (dialog, item) -> {
 
-                @Override
-                public void onClick(DialogInterface dialog, int item) {
+                if (options[item].equals(getResources().getString(R.string.take_photo_option))) {
+                    Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(takePicture, TAKE_PHOTO_REQUEST_CODE);
 
-                    if (options[item].equals(getResources().getString(R.string.take_photo_option))) {
-                        Intent takePicture = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        startActivityForResult(takePicture, TAKE_PHOTO_REQUEST_CODE);
+                } else if (options[item].equals(getResources().getString(R.string.gallery_option))) {
+                    Intent pickPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(pickPhoto, CHOOSE_FROM_GALLERY_REQUEST_CODE);
 
-                    } else if (options[item].equals(getResources().getString(R.string.gallery_option))) {
-                        Intent pickPhoto = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(pickPhoto, CHOOSE_FROM_GALLERY_REQUEST_CODE);
-
-                    }
                 }
             });
             builder.show();
@@ -226,7 +224,6 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
     }
 
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_CANCELED) {
             switch (requestCode) {
@@ -237,7 +234,7 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
                         Glide.with(getContext()).load(photo).apply(RequestOptions.circleCropTransform()).into(choosePhoto);
 
-                        image_path = getRealPathFromURI(getImageUri(getContext(), photo));
+                        image_path = TitlePhotoMaker.getRealPathFromURI(getImageUri(getContext(), photo),getContext());
 
                     }
                     break;
@@ -263,12 +260,10 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
-    @Override
     public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
 
     }
 
-    @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
         if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
             new AppSettingsDialog.Builder(this).build().show();
@@ -277,61 +272,9 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
     }
 
-    @Override
     public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
         String date = dateFormat.format(new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime());
         editExpireDate.setText(date);
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
-
-    public String getRealPathFromURI(Uri uri) {
-
-        Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
-        cursor.moveToFirst();
-        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-        return cursor.getString(idx);
-
-    }
-
-    String createImage(String text) {
-
-        int[] colors = getResources().getIntArray(R.array.avatarColor);
-        Random rnd = new Random();
-
-        Bitmap bitmap = Bitmap.createBitmap(128, 128, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint();
-
-
-        paint.setColor(colors[rnd.nextInt(5)]);
-        canvas.drawRect(0F, 0F, (float) 128, (float) 128, paint);
-
-        int xPos = (canvas.getWidth() / 2);
-        int yPos = (canvas.getHeight() / 2) + 10;
-
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(40);
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
-
-
-        canvas.drawText(text.substring(0, 2), xPos, yPos, paint);
-
-
-        String path = getContext().getCacheDir().getPath() + "/" + System.currentTimeMillis() + text;
-        try {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(new File(path)));
-
-        } catch (FileNotFoundException e) {
-
-            e.printStackTrace();
-        }
-        return path;
-    }
 }

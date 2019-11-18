@@ -39,7 +39,6 @@ public class ProductDiffCallback extends DiffUtil.Callback {
         final Product newProduct = mNewProductsList.get(newItemPosition);
 
 
-
         return oldProduct.getTitle().equals(newProduct.getTitle());
     }
 

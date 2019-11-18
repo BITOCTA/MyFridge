@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,17 +19,15 @@ import androidx.fragment.app.DialogFragment;
 
 import com.bitocta.myfridge.R;
 import com.bitocta.myfridge.db.entity.Product;
+import com.bitocta.myfridge.viewmodel.ProductViewModel;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
-
-import static android.text.format.DateFormat.getDateFormat;
-
 import static android.app.Activity.RESULT_OK;
+import static android.text.format.DateFormat.getDateFormat;
 
 
 public class ProductChangeDialog extends DialogFragment {
-
 
 
     public final static int REMOVED_PRODUCT = 2;
@@ -40,7 +37,7 @@ public class ProductChangeDialog extends DialogFragment {
     private Toolbar toolbar;
     private int position;
 
-    private Product product;
+    private Product chosenProduct;
 
     private TextView productTitle;
     private TextView productExpireDate;
@@ -49,6 +46,7 @@ public class ProductChangeDialog extends DialogFragment {
     private ImageView productImage;
     private TextView buttonDelete;
     private java.text.DateFormat dateFormat;
+    private ProductViewModel pvm;
 
 
     @Override
@@ -96,9 +94,7 @@ public class ProductChangeDialog extends DialogFragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-
-        product = ProductsListFragment.mProductViewModel.getAllProducts().getValue().get(position);
-
+        chosenProduct = ProductsListFragment.mProductViewModel.getAllProducts().getValue().get(position);
 
         dateFormat = getDateFormat(getContext());
 
@@ -107,27 +103,24 @@ public class ProductChangeDialog extends DialogFragment {
         toolbar.inflateMenu(R.menu.menu_dialog);
         toolbar.setOnMenuItemClickListener(this::onOptionsItemSelected);
 
-        productTitle.setText(product.getTitle().replaceAll("\\r\\n|\\r|\\n", " "));
-        editQuantity.setText(product.getItemsLeft().replaceAll("\\r\\n|\\r|\\n", " "));
+        productTitle.setText(chosenProduct.getTitle().replaceAll("\\r\\n|\\r|\\n", " "));
+        editQuantity.setText(chosenProduct.getItemsLeft().replaceAll("\\r\\n|\\r|\\n", " "));
 
-        if (product.getExpireDate() != null) {
-            productExpireDate.setText(dateFormat.format(product.getExpireDate()));
+        if (chosenProduct.getExpireDate() != null) {
+            productExpireDate.setText(dateFormat.format(chosenProduct.getExpireDate()));
         } else {
             productExpireDate.setText(getResources().getText(R.string.no_expire_date));
         }
 
 
-        Glide.with(getContext()).load(product.getImagePath()).apply(RequestOptions.circleCropTransform()).into(productImage);
+        Glide.with(getContext()).load(chosenProduct.getImagePath()).apply(RequestOptions.circleCropTransform()).into(productImage);
 
 
-        buttonDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent replyIntent = new Intent();
-                replyIntent.putExtra("product", product);
-                getTargetFragment().onActivityResult(getTargetRequestCode(), REMOVED_PRODUCT, replyIntent);
-                dismiss();
-            }
+        buttonDelete.setOnClickListener(view1 -> {
+            Intent replyIntent = new Intent();
+            replyIntent.putExtra("product", chosenProduct);
+            getTargetFragment().onActivityResult(getTargetRequestCode(), REMOVED_PRODUCT, replyIntent);
+            dismiss();
         });
 
 
@@ -140,11 +133,11 @@ public class ProductChangeDialog extends DialogFragment {
 
         if (id == R.id.action_save) {
 
-            if (!editQuantity.getText().toString().isEmpty() || product.getItemsLeft().isEmpty()) {
+            if (!editQuantity.getText().toString().isEmpty() || chosenProduct.getItemsLeft().isEmpty()) {
 
                 Intent replyIntent = new Intent();
-                product.setItemsLeft(editQuantity.getText().toString());
-                replyIntent.putExtra("product", product);
+                chosenProduct.setItemsLeft(editQuantity.getText().toString());
+                replyIntent.putExtra("product", chosenProduct);
                 getTargetFragment().onActivityResult(getTargetRequestCode(), RESULT_OK, replyIntent);
                 dismiss();
             } else {

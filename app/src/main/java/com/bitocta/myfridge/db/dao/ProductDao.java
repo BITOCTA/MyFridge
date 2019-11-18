@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
 
 import com.bitocta.myfridge.db.entity.Product;
 
@@ -20,9 +20,7 @@ public interface ProductDao {
     @Delete
     void delete(Product client);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Product client);
 
-    @Update
-    void update(Product update);
 }
