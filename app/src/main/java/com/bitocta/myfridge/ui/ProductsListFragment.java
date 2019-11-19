@@ -77,7 +77,8 @@ public class ProductsListFragment extends Fragment {
         mProductViewModel = ViewModelProviders.of(this).get(ProductViewModel.class);
 
 
-        mProductViewModel.getAllProducts().observe(this, products -> productsListAdapter.updateEmployeeListItems(products));
+        mProductViewModel.getAllProducts().observe(this, products -> {
+            productsListAdapter.updateEmployeeListItems(products); });
 
         productsListAdapter = new ProductsListAdapter();
 
@@ -140,12 +141,14 @@ public class ProductsListFragment extends Fragment {
 
             }
             if (requestCode == CHANGE_PRODUCT_REQUEST_CODE) {
+
                 Product product = (Product) data.getSerializableExtra(PRODUCT_TAG);
                 mProductViewModel.insert(product);
-                productsListAdapter.notifyDataSetChanged();
 
+                productsListAdapter.notifyDataSetChanged();
                 recyclerView.requestLayout();
                 recyclerView.forceLayout();
+
 
             }
         }

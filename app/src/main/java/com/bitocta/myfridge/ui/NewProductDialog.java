@@ -142,11 +142,10 @@ public class NewProductDialog extends DialogFragment implements EasyPermissions.
 
             if (trimmedTitle.isEmpty()) {
                 Toast.makeText(getContext(), R.string.no_title_entered, Toast.LENGTH_LONG).show();
-            } else if (trimmedTitle.length() < MINIMAL_TITLE_LENGTH) {
+            }  if (trimmedTitle.length() < MINIMAL_TITLE_LENGTH) {
                 Toast.makeText(getContext(), R.string.product_title_min_length, Toast.LENGTH_LONG).show();
-            } else if (trimmedQuantity.length() == 0 && editQuantity.getText().toString().length() > 0) {
+            }  if (trimmedQuantity.length() == 0 ) {
                 Toast.makeText(getContext(), R.string.no_quantity_entered, Toast.LENGTH_LONG).show();
-
             } else {
 
                 Intent replyIntent = new Intent();

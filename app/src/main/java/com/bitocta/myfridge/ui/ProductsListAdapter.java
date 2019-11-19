@@ -59,9 +59,12 @@ public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapte
         title.setText(productTitle);
 
 
+
+
         if (!productItemsLeft.isEmpty()) {
             itemsLeft.setText(productItemsLeft);
         }
+
 
 
         if (productExpireDate != null) {
@@ -70,6 +73,8 @@ public class ProductsListAdapter extends RecyclerView.Adapter<ProductsListAdapte
         } else {
             expireDate.setText(R.string.no_expire_date);
         }
+
+
 
 
         if (!productImagePath.isEmpty()) {
